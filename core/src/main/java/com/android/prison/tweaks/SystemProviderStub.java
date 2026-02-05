@@ -4,13 +4,13 @@ import android.os.IInterface;
 
 import java.lang.reflect.Method;
 
-import com.android.prison.base.BContentProvider;
+import com.android.prison.base.IContentProvider;
 import com.android.prison.interfaces.android.content.BRAttributionSource;
 import com.android.prison.core.PrisonCore;
 import com.android.prison.base.ClassInvocationStub;
 import com.android.prison.utils.ContextCompat;
 
-public class SystemProviderStub extends ClassInvocationStub implements BContentProvider {
+public class SystemProviderStub extends ClassInvocationStub implements IContentProvider {
     private IInterface mBase;
 
     @Override

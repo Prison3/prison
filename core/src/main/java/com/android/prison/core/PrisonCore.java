@@ -160,97 +160,12 @@ public final class PrisonCore {
         }
     }
 
-    // ============== Storage Permission Methods (SDK 30+) ==============
-
-    /**
-     * Check if the host app has storage permission.
-     * On Android 13+, this checks for granular media permissions.
-     * On Android 11-12, this checks for READ_EXTERNAL_STORAGE or MANAGE_EXTERNAL_STORAGE.
-     */
-    public boolean hasStoragePermission() {
-        return StoragePermissionHelper.hasStoragePermission(mContext);
-    }
-
-    /**
-     * Check if the host app has "All Files Access" (MANAGE_EXTERNAL_STORAGE) on Android 11+.
-     * Returns true on older Android versions where this isn't required.
-     */
-    public boolean hasAllFilesAccess() {
-        return StoragePermissionHelper.hasAllFilesAccess();
-    }
-
-    /**
-     * Check if the host app has full file access (both storage permission and all files access).
-     */
-    public boolean hasFullFileAccess() {
-        return StoragePermissionHelper.hasFullFileAccess(mContext);
-    }
-
-    /**
-     * Request storage permission from the user.
-     * On Android 13+, requests granular media permissions.
-     * On older versions, requests READ/WRITE_EXTERNAL_STORAGE.
-     *
-     * @param activity The activity to use for requesting permission
-     */
-    public void requestStoragePermission(android.app.Activity activity) {
-        StoragePermissionHelper.requestStoragePermission(activity);
-    }
-
-    /**
-     * Request "All Files Access" (MANAGE_EXTERNAL_STORAGE) on Android 11+.
-     * This opens the system settings page for the user to grant permission.
-     *
-     * @param activity The activity to use for requesting permission
-     */
-    public void requestAllFilesAccess(android.app.Activity activity) {
-        StoragePermissionHelper.requestAllFilesAccess(activity);
-    }
-
-    /**
-     * Request full file access (both storage permission and all files access).
-     * Use this before launching apps that need file access.
-     *
-     * @param activity The activity to use for requesting permission
-     */
-    public void requestFullFileAccess(android.app.Activity activity) {
-        StoragePermissionHelper.requestFullFileAccess(activity);
-    }
-
-    /**
-     * Handle permission result callback from Activity.onRequestPermissionsResult()
-     * @return true if storage permission was granted
-     */
-    public boolean handleStoragePermissionResult(android.app.Activity activity, int requestCode,
-                                                 String[] permissions, int[] grantResults) {
-        return StoragePermissionHelper.handlePermissionResult(activity, requestCode, permissions, grantResults);
-    }
-
-    /**
-     * Handle result from All Files Access settings activity.
-     * Call this from Activity.onActivityResult()
-     * @return true if all files access was granted
-     */
-    public boolean handleAllFilesAccessResult(int requestCode) {
-        return StoragePermissionHelper.handleAllFilesAccessResult(requestCode);
-    }
-
-    /**
-     * Get the request codes for permission handling.
-     */
-    public static int getStoragePermissionRequestCode() {
-        return StoragePermissionHelper.REQUEST_CODE_STORAGE_PERMISSION;
-    }
-
-    public static int getAllFilesAccessRequestCode() {
-        return StoragePermissionHelper.REQUEST_CODE_MANAGE_STORAGE;
-    }
-
+    
     public boolean launchApk(String packageName, int userId) {
         mAppCallback.beforeMainLaunchApk(packageName,userId);
         // Check storage permissions on Android 11+ (SDK 30+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!hasAllFilesAccess()) {
+            if (! StoragePermissionHelper.hasAllFilesAccess()) {
                 Logger.w(TAG, "All files access not granted for launching: " + packageName);
                 if (mAppCallback.onStoragePermissionNeeded(packageName, userId)) {
                     // Host app will handle the permission request, cancel launch

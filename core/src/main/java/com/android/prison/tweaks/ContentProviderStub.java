@@ -4,7 +4,7 @@ import android.os.IInterface;
 
 import java.lang.reflect.Method;
 
-import com.android.prison.base.BContentProvider;
+import com.android.prison.base.IContentProvider;
 import com.android.prison.core.PrisonCore;
 import com.android.prison.base.ClassInvocationStub;
 import com.android.prison.utils.AttributionSourceUtils;
@@ -12,7 +12,7 @@ import com.android.prison.utils.AttributionSourceUtils;
 import android.os.Bundle;
 import com.android.prison.utils.Logger;
 
-public class ContentProviderStub extends ClassInvocationStub implements BContentProvider {
+public class ContentProviderStub extends ClassInvocationStub implements IContentProvider {
     public static final String TAG = ContentProviderStub.class.getSimpleName();
     private IInterface mBase;
     private String mAppPkg;
