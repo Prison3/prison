@@ -1,0 +1,38 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.jetbrains.kotlin.android) apply false
+    alias(libs.plugins.android.library) apply false
+}
+
+// Function to get git commit count
+def getGitCommitCount() {
+    try {
+        def process = "git rev-list --count HEAD".execute()
+        process.waitFor()
+        def count = process.text.trim()
+        return count.isEmpty() ? "1" : count
+    } catch (Exception e) {
+        return "1"
+    }
+}
+
+String getGitDescribe() {
+    ByteArrayOutputStream out = new ByteArrayOutputStream()
+    exec {
+        commandLine("git", "describe", "--tags", "--always")
+        standardOutput = out
+    }
+    return out.toString().trim()
+}
+
+
+ext {
+    compileSdkVersion = 35
+    targetSdkVersion = 33
+    minSdk = 33
+    versionCode = getGitCommitCount().toInteger()
+    versionName = String.valueOf(getGitCommitCount()) + " - " + getGitDescribe()
+    xVersion = '1.1.0'
+    hiddenApiBypass = '4.3'
+}

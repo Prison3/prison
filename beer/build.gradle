@@ -1,0 +1,59 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'com.swift.sandhook'
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    ndkVersion "29.0.13846066"
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.minSdk
+        targetSdkVersion rootProject.ext.targetSdkVersion
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DCMAKE_BUILD_TYPE=Release"
+                cppFlags "-std=c++11"
+            }
+        }
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+gradle.taskGraph.afterTask { task ->
+    FileCollection fileCollection = task.getOutputs().getFiles();
+    //def files = fileCollection.getFiles();
+    FileTree fileTree = fileCollection.getAsFileTree();
+    Set<File> files = fileTree.getFiles();
+    for (File file:files){
+        String filePath64 = file.getAbsolutePath();
+        if (filePath64.endsWith(".so") && filePath64.contains("arm64-v8a")){
+            String filePath32 = filePath64.replace("arm64-v8a","armeabi-v7a");
+            def commandLine = "cp -rf " + filePath64 +" " +filePath32
+        }
+    }
+}
+
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.jakewharton.android.repackaged:dalvik-dx:9.0.0_r3'
+}

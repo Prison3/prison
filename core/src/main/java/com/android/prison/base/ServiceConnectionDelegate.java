@@ -1,0 +1,84 @@
+package com.android.prison.base;
+
+import android.app.IServiceConnection;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.os.IBinder;
+import android.os.RemoteException;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.android.prison.core.PrisonCore;
+import com.android.prison.interfaces.android.app.BRIServiceConnectionO;
+import com.android.prison.utils.BuildCompat;
+
+public class ServiceConnectionDelegate extends IServiceConnection.Stub {
+    private static final Map<IBinder, ServiceConnectionDelegate> sServiceConnectDelegate = new HashMap<>();
+    private final IServiceConnection mConn;
+    private final ComponentName mComponentName;
+
+    private ServiceConnectionDelegate(IServiceConnection mConn, ComponentName targetComponent) {
+        this.mConn = mConn;
+        this.mComponentName = targetComponent;
+    }
+
+    public static ServiceConnectionDelegate getDelegate(IBinder iBinder) {
+        return sServiceConnectDelegate.get(iBinder);
+    }
+
+    public static IServiceConnection createProxy(IServiceConnection base, Intent intent) {
+        final IBinder iBinder = base.asBinder();
+        ServiceConnectionDelegate delegate = sServiceConnectDelegate.get(iBinder);
+        if (delegate == null) {
+            try {
+                iBinder.linkToDeath(new IBinder.DeathRecipient() {
+                    @Override
+                    public void binderDied() {
+                        sServiceConnectDelegate.remove(iBinder);
+                        iBinder.unlinkToDeath(this, 0);
+                    }
+                }, 0);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            delegate = new ServiceConnectionDelegate(base, intent.getComponent());
+            sServiceConnectDelegate.put(iBinder, delegate);
+        }
+        return delegate;
+    }
+
+    @Override
+    public void connected(ComponentName name, IBinder service) throws RemoteException {
+        connected(name, service, false);
+    }
+
+    public void connected(ComponentName name, IBinder service, boolean dead) throws RemoteException {
+        if (BuildCompat.isOreo()) {
+            BRIServiceConnectionO.get(mConn).connected(mComponentName, service, dead);
+        } else {
+            mConn.connected(name, service);
+        }
+    }
+
+    public static class CrashHandler implements Thread.UncaughtExceptionHandler {
+        private Thread.UncaughtExceptionHandler mDefaultHandler;
+
+        public static void create() {
+            new CrashHandler();
+        }
+
+        public CrashHandler() {
+            mDefaultHandler = Thread.getDefaultUncaughtExceptionHandler();
+            Thread.setDefaultUncaughtExceptionHandler(this);
+        }
+
+        @Override
+        public void uncaughtException(Thread t, Throwable e) {
+            if (PrisonCore.get().getExceptionHandler() != null) {
+                PrisonCore.get().getExceptionHandler().uncaughtException(t, e);
+            }
+            mDefaultHandler.uncaughtException(t, e);
+        }
+    }
+}
