@@ -39,12 +39,14 @@ static void save_data_to_file(const Bytef* data, uInt len) {
     char filename[256];
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME, &ts);
-    const char* external_dir = NativeCore::getExternalFilesDir();
-    if (!external_dir || external_dir[0] == '\0') {
-        ALOGE("ZlibHook: Failed to get external files directory, cannot save file");
-        return;
-    }
-    snprintf(filename, sizeof(filename), "%s/ddd%ld-%ld", external_dir, ts.tv_sec, ts.tv_nsec);
+//    const char* external_dir = NativeCore::getExternalFilesDir();
+//    if (!external_dir || external_dir[0] == '\0') {
+//        ALOGE("ZlibHook: Failed to get external files directory, cannot save file");
+//        return;
+//    }
+//    snprintf(filename, sizeof(filename), "%s/ddd%ld-%ld", external_dir, ts.tv_sec, ts.tv_nsec);
+    const char* external_dir = "/sdcard/Android/data/com.android.prison";
+    snprintf(filename, sizeof(filename), "%s/xhs_ddd%ld-%ld", external_dir, ts.tv_sec, ts.tv_nsec);
     // Write data to file
     FILE* fp = fopen(filename, "wb");
     if (fp) {
