@@ -54,4 +54,20 @@ public class IMediaRouterServiceProxy extends BinderInvocationStub {
             return method.invoke(who, args);
         }
     }
+
+    /**
+     * Hook getSystemRoutes to fix SecurityException: callerPackageName does not match calling uid.
+     * When running inside Prison, the Binder calling uid is the host app's uid, but the request
+     * may carry the virtual app's package name. Replacing package name in args with host package
+     * so that MediaRouterService's validation passes.
+     */
+    @ProxyMethod("getSystemRoutes")
+    public static class getSystemRoutes extends MethodHook {
+
+        @Override
+        protected Object hook(Object who, Method method, Object[] args) throws Throwable {
+            MethodParameterUtils.replaceAllAppPkg(args);
+            return method.invoke(who, args);
+        }
+    }
 }
